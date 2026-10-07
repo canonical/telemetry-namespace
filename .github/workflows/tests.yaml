@@ -1,0 +1,18 @@
+name: Tests
+
+on:
+  workflow_dispatch:
+# uncomment to initialize
+#   pull_request:
+#     branches:
+#       - main
+#   push:
+#     branches:
+#       - main
+
+jobs:
+  test-and-build:
+    uses: canonical/telemetry-cicd-workflows/.github/workflows/tests_golang.yaml@main
+    with:
+      tiobe-project-name: ${{ github.event.repository.name }} #the project name is the repository name when we register the repo
+    secrets: inherit

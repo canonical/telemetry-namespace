@@ -1,0 +1,11 @@
+name: Security Artefacts
+
+on:
+  # Uncomment to initialize workflow
+  workflow_dispatch:
+  # schedule:
+  #   - cron: "0 0 * * 1"
+
+jobs:
+  vul-scan:
+    uses: canonical/telemetry-cicd-workflows/.github/workflows/vul_scan.yaml@main
