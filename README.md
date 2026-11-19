@@ -1,35 +1,53 @@
-# Telemetry Template Repository
+# Telemetry Namespace
 
-This repository is a template to be used to create repostries for Go-based projects in the telemetry team. It follows the Golang [project structure](#project-structure) as well as including the SSDLC workflows needed to generate artefacts. We also add the required SECURITY.md file for SSDLC and a template `.golangci.yml` file for linting.  
+`github.com/canonical/telemetry-namespace` is the reference implementation of the Telemetry MQTT
+namespace. It is shared by the Connect Agent, the Telemetry Management Service (TMS), the connector
+service and the Telemetry CLI, so that every component builds, parses and validates topics in exactly the
+same way.
 
-## SSDLC Workflows
-This repository also contains the workflows for the SSDLC artefacts required by each team. They include:
-* TICS Static Analysis: the project must be registered first and the `TICSAUTHTOKEN` must be added as a secret. (Check the [docs](https://canonical-telemetry-internal.readthedocs-hosted.com/en/latest/Development/CICD/intro/) for more details)
-* Vulnerability Scan: we currently use Trivy for our analysis, but are waiting on the sbomber tool to be Github-compatible. The results ate then added to the home directory where they can be stored for later.
-* SBOM Generation: we again use Trivy for it, but will also be replaced by sbomber.
+It implements the specs TM102 (Topic Namespace & User Properties) and TM103 (Topic Selectors).
 
+## Packages
 
-The workflows will `on` keyword will be commented out as they will fail without any actual code. They can be activated by uncommenting that section from the YAML files. We also include a template SECURITY.md file that must be added if the repository is public and must address the security status of the project as well as the reporting mechanism for vulnerabilities.
+| Package | Provides |
+|---|---|
+| `topic` | Wire topic build and parse (`<tenant>/devices\|groups\|_system/...`), identifier, publisher and local-topic validation, platform topics |
+| `match` | MQTT topic-name and filter validation, filter matching and containment, shared subscriptions |
+| `fga` | Encoding of topic filters as OpenFGA object IDs |
+| `selector` | Topic selector parser (`[devices: d1]/t`, `[groups: g1]/t`, ...) and resolution to wire topics |
+| `props` | `cc-*` MQTT 5 user property names and helpers |
+| `system` | JSON payloads published under `<tenant>/_system/...` |
 
-## Project Structure
+Packages land incrementally; see the [issues](https://github.com/canonical/telemetry-namespace/issues).
 
-In general, projects should follow [this](https://github.com/golang-standards/project-layout) project layout:  
-* *`/cmd:`* The main applications for the project.  
-* *`/internal:`* Private application and library code. This is the code you don't want others importing in their applications or libraries.  
-* *`/pkg:`* Library code that's ok to use by external applications.  
-* *`/vendor:`* Application dependencies managed with *`go mod vendor`*.  
-* *`/api:`* OpenAPI/Swagger specs, JSON schema files, protocol definition files.  
-* *`/web:`* Web application specific components: static web assets, server side templates and SPAs.  
-* *`/scripts:`* Scripts to perform various build, install, analysis, etc operations which helps keep the root level *`Makefile`* small and simple.  
-* *`/snap:`* If the project is snapped.  
-* *`/charm:`* If the project is charmed.  
-* *`/docs:`* Design and user documents (in addition to your *`godoc`* generated documentation).
+## Goals
 
-### Packages
+- **One implementation.** Components must use this module rather than re-implement the namespace rules.
+- **No runtime dependencies.** Only the Go standard library is imported by non-test code.
+- **Small, stable API.** Packages expose plain functions and value types, with no I/O and no global state.
 
-* The code in *`/internal`* and *`/pkg`* should be structured in packages (see [Package oriented design](https://github.com/ardanlabs/gotraining/blob/master/topics/go/design/packaging/README.md)).  
-* Packages should have a clear responsibility, and present an exported interface with a relatively consistent level of abstraction.  
-* Packages must be named with the intent to describe what they provide.
+## Versioning
 
-## Linting
-Golang projects must undergo linting before being pushed we use [golangci](https://golangci-lint.run/) to customize our linting and add or remove linters based on the use case. We provide a template `.golangci.yml` file to use as a reference.
+The module follows [semantic versioning](https://semver.org/), and releases are cut automatically from
+[conventional commits](https://www.conventionalcommits.org/) on `main`.
+
+- `v0.x` until the namespace v2 release: the API may change between minor versions.
+- `v1.0.0` with the namespace v2 release, after which breaking changes need a new major version.
+
+## Development
+
+Requirements: Go (version from `go.mod`) and [golangci-lint](https://golangci-lint.run/) v2.
+
+```bash
+go test -race ./...       # tests, as run in CI
+go test -cover ./...      # coverage
+golangci-lint run ./...   # lint, as run in CI
+```
+
+CI runs lint and test, a code scan (gosec, Trivy) and a repo scan (Gitleaks, zizmor) on every pull
+request, and semantic-release on `main`. The workflows mirror the team's shared SSDLC workflows, inlined
+because a public repository can't call reusable workflows from an internal one.
+
+## Security
+
+See [SECURITY.md](./SECURITY.md).

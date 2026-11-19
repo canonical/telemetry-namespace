@@ -1,0 +1,15 @@
+# Test binaries and coverage output
+*.test
+*.out
+coverage.html
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Editors
+.vscode/
+.idea/
+
+# Scanners
+trivy*
