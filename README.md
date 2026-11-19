@@ -18,8 +18,6 @@ It implements the specs TM102 (Topic Namespace & User Properties) and TM103 (Top
 | `props` | `cc-*` MQTT 5 user property names and helpers |
 | `system` | JSON payloads published under `<tenant>/_system/...` |
 
-Packages land incrementally; see the [issues](https://github.com/canonical/telemetry-namespace/issues).
-
 ## Goals
 
 - **One implementation.** Components must use this module rather than re-implement the namespace rules.
