@@ -1,0 +1,55 @@
+# Semantic-release step of canonical/telemetry-ssdlc release.yaml. A Go
+# library has nothing to pack or publish: the tag is the release.
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  semantic-release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release and tag
+      issues: write # comment on issues referenced by released commits
+      pull-requests: write # comment on PRs referenced by released commits
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure semantic-release
+        run: |
+          cat > .releaserc.json << 'JSON'
+          {
+            "plugins": [
+              "@semantic-release/commit-analyzer",
+              "@semantic-release/release-notes-generator",
+              ["@semantic-release/github", {"successComment": false}]
+            ]
+          }
+          JSON
+
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@ad51787758d9654d5a75150a89a6fa9b3ccef95e # v8.1.4
+        id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release summary
+        if: steps.semantic.outputs.new_release_published == 'true'
+        env:
+          VERSION: ${{ steps.semantic.outputs.new_release_version }}
+        run: echo "### Release v${VERSION}" >> "$GITHUB_STEP_SUMMARY"

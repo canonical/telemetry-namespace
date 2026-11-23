@@ -1,0 +1,7 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Ignore generic-api-key false positives in Go test files"
+targetRules = ["generic-api-key"]
+paths = ['''(?i)_test\.go$''']

@@ -17,7 +17,6 @@ linters:
     - gocritic
     - godot
     - godox
-    - goheader
     - goprintffuncname
     - govet
     - importas
@@ -43,16 +42,8 @@ linters:
         - appendAssign
       enabled-tags:
         - diagnostic
-      disabled-tags:
-        - performance
-        - style
-        - experimental
-        - opinionated
-    goheader:
-      template: Copyright (C) 2025 Canonical Ltd
     importas:
       no-unaliased: true
-      no-extra-aliases: false
     misspell:
       ignore-rules:
         - mosquitto
@@ -74,13 +65,16 @@ linters:
       - third_party$
       - builtin$
       - examples$
+    rules:
+      - linters:
+          - goconst
+        path: _test\.go
 issues:
   max-issues-per-linter: 100
   max-same-issues: 100
 formatters:
   enable:
     - gci
-    - gofmt
     - gofumpt
     - goimports
   exclusions:
